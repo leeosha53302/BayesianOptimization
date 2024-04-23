@@ -1,0 +1,24 @@
+from bayes_opt import BayesianOptimization
+from bayes_opt.util import UtilityFunction
+
+# 设置参数范围
+optimizer = BayesianOptimization(
+    f=None,
+    pbounds={'cvr_power':(0,2),'price_power':(-2,2)}
+)
+
+# 将观测数据注册到优化器中
+for _,val in data.items():
+        params = val[0]
+        reward = val[1]
+        print('params:{},reward:{}'.format(params,reward))
+        optimizer.register(
+            params=params,
+            target=reward,
+        )
+
+# 优化器批量输出下一组参数点
+num_points = 5  # 希望获得的参数点数量
+utility = UtilityFunction(kind="ucb", kappa=2.5, xi=0.0)
+next_params = optimizer.suggest(utility,num_points)
+print(next_params)
