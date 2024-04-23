@@ -8,17 +8,26 @@ optimizer = BayesianOptimization(
 )
 
 # 将观测数据注册到优化器中
-for _,val in data.items():
-        params = val[0]
-        reward = val[1]
-        print('params:{},reward:{}'.format(params,reward))
-        optimizer.register(
-            params=params,
-            target=reward,
-        )
+for val in v:
+    valid_observe_cnt += 1
+    params = {'cvr_power':float(val['cvr_power']),'price_power':float(val['price_power'])}
+    params_list.append(params)
+    reward = val['reward']
+    reward_list.append(reward)
+    print('registering algo_version:{},scene:{},params:{},reward:{}'.format(algo_version, scene,params,reward))
+    history_params_target_list.append([algo_version,scene,float(val['cvr_power']),float(val['price_power']),val['reward']])
+
+for i in range(len(params_list)):
+    optimizer.register(
+        params=params_list[i],
+        target=reward_list[i]
+    )
 
 # 优化器批量输出下一组参数点
 num_points = 5  # 希望获得的参数点数量
+# kind
+# kappa 越大越侧重探索，越小越侧重利用
+# xi 是预测目标提升的阈值，预测目标提升大于这个阈值才会认为是值得探索的参数
 utility = UtilityFunction(kind="ucb", kappa=2.5, xi=0.0)
 next_params = optimizer.suggest(utility,num_points)
 print(next_params)
